@@ -65,10 +65,9 @@ contract MyERC20 is IERC20{
     }
 
     // 销毁代币，从 调用者地址
-    // 这种写法有OEA对象的问题
-    // function burn(uint amount) external {
-    //     this.transfer(ZERO_ADDRESS, amount);
-    // }
+    function burn(uint amount) external {
+        this.transfer(ZERO_ADDRESS, amount);
+    }
 
     // 销毁代币，从调用者地址
     function burn(uint256 amount) external CheckBalanceOf(amount) {
@@ -76,6 +75,4 @@ contract MyERC20 is IERC20{
         balanceOf[msg.sender] -= amount;
         emit Transfer(msg.sender, ZERO_ADDRESS, amount);
     }
-
-
 }
