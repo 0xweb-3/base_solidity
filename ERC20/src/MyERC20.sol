@@ -65,9 +65,10 @@ contract MyERC20 is IERC20{
     }
 
     // 销毁代币，从 调用者地址
-    function burn(uint amount) external {
-        this.transfer(ZERO_ADDRESS, amount);
-    }
+    // 存在OEA问题
+    // function burn(uint amount) external {
+    //     this.transfer(ZERO_ADDRESS, amount);
+    // }
 
     // 销毁代币，从调用者地址
     function burn(uint256 amount) external CheckBalanceOf(amount) {
@@ -76,3 +77,31 @@ contract MyERC20 is IERC20{
         emit Transfer(msg.sender, ZERO_ADDRESS, amount);
     }
 }
+
+
+contract Faucet {
+    uint256 public amountAllowed = 100; // 每次领 100单位代币
+    address public tokenContract;   // token合约地址
+    mapping(address => bool) public requestedAddress;   // 记录领取过代币的地址
+
+    // SendToken事件    
+    event SendToken(address indexed Receiver, uint256 indexed Amount); 
+
+    // 部署时设定ERC20代币合约
+    constructor(address _tokenContract) {
+        tokenContract = _tokenContract; // set token contract
+    }
+
+    // 用户领取代币函数
+    function requestTokens() external {
+        require(!requestedAddress[msg.sender], "Can't Request Multiple Times!"); //  每个地址只能一次
+        IERC20 token = IERC20(tokenContract); // 创建IERC20合约对象
+        require(token.balanceOf(address(this)) >= amountAllowed, "Faucet Empty!"); // 是否还有水
+
+        token.transfer(msg.sender, amountAllowed); // 发送token
+        requestedAddress[msg.sender] = true;
+
+        emit SendToken(msg.sender, amountAllowed); 
+    }
+}
+
